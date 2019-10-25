@@ -33,12 +33,33 @@ fn background_color(ray: &Ray) -> u32 {
     color(r as u8, g as u8, b as u8)
 }
 
+fn background_colors(ray: &Ray) -> (u32, u32, u32) {
+    let unit_x = Vec3::new(1.0, 0.0, 0.0);
+    let unit_y = Vec3::new(0.0, 1.0, 0.0);
+
+    let dot_x = 1.0 + Vec3::dot_product(&unit_x, ray.direction()) / 2.0;
+    let dot_y = 1.0 + Vec3::dot_product(&unit_y, ray.direction()) / 2.0;
+
+    let r = (dot_x * 100.0).min(255.0);
+    let g = (dot_x * 100.0).min(255.0);
+    let b = (100.0 + (dot_y * 100.0)).min(255.0);
+
+    (r as u32, g as u32, b as u32)
+}
+
 fn normal_to_color(normal: &Vec3) -> u32 {
     let r = ((normal.x + 1.0) / 2.0 * 255.0).min(255.0);
     let g = ((normal.y + 1.0) / 2.0 * 255.0).min(255.0);
     let b = ((normal.z + 1.0) / 2.0 * 255.0).min(255.0);
 
     color(r as u8, g as u8, b as u8)
+}
+
+fn normal_to_colors(normal: &Vec3) -> (u32, u32, u32) {
+    (((normal.x + 1.0) / 2.0 * 255.0).min(255.0) as u32, 
+     ((normal.y + 1.0) / 2.0 * 255.0).min(255.0) as u32, 
+     ((normal.z + 1.0) / 2.0 * 255.0).min(255.0) as u32)
+
 }
 
 fn main() {
@@ -71,7 +92,9 @@ fn main() {
         let x = index % WIDTH;
         let y = index / WIDTH;
 
-        let mut color_value = 0u32;
+        let mut red = 0u32;
+        let mut green = 0u32;
+        let mut blue = 0u32;
         for i in 0..RAY_PER_PIXEL {
             let factor_x: f32 = (x as f32 + (rng.gen::<f32>() * 2.0 - 1.0)) / WIDTH as f32;
             let factor_y: f32 = (y as f32 + (rng.gen::<f32>() * 2.0 - 1.0)) / HEIGHT as f32;
@@ -102,13 +125,22 @@ fn main() {
 
             if has_hit {
                 closest_normal.normalize();
-                color_value += normal_to_color(&closest_normal);
+                let (r, g, b) = normal_to_colors(&closest_normal);
+                red += r;
+                blue += b;
+                green += g;
             } else {
-                color_value += background_color(&ray);
+                let (r, g, b) = background_colors(&ray);
+                red += r;
+                blue += b;
+                green += g;
             }
         }
 
-        *value = color_value / RAY_PER_PIXEL;
+                red /= RAY_PER_PIXEL;
+                blue /= RAY_PER_PIXEL;
+                green /= RAY_PER_PIXEL;
+        *value = color(red as u8, green as u8, blue as u8);
     }
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
