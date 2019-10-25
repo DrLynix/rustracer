@@ -65,7 +65,7 @@ fn main() {
     let horizontal = Vec3::new(4.0, 0.0, 0.0);
     let vertical = Vec3::new(0.0, -2.0, 0.0);
 
-    let mut rng = rand::XorShiftRng::new_unseeded();
+    let mut rng = rand::thread_rng();
 
     for (index, value) in buffer.iter_mut().enumerate() {
         let x = index % WIDTH;
@@ -73,8 +73,8 @@ fn main() {
 
         let mut color_value = 0u32;
         for i in 0..RAY_PER_PIXEL {
-            let factor_x = (x as f32 + (rng.next_f32() * 2.0 - 1.0)) / WIDTH as f32;
-            let factor_y = (y as f32 + (rng.next_f32() * 2.0 - 1.0)) / HEIGHT as f32;
+            let factor_x: f32 = (x as f32 + (rng.gen::<f32>() * 2.0 - 1.0)) / WIDTH as f32;
+            let factor_y: f32 = (y as f32 + (rng.gen::<f32>() * 2.0 - 1.0)) / HEIGHT as f32;
 
             let ray = Ray::new(
                 origin,
